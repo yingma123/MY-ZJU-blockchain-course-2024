@@ -1,4 +1,4 @@
-# ZJU-blockchain-course-2024
+# MY-ZJU-blockchain-course-2024
 
 ⬆ 可以️修改成你自己的项目名。
 
