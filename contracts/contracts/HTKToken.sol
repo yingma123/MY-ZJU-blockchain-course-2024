@@ -6,7 +6,7 @@ contract HTKToken is ERC20 {
 
     constructor() ERC20("HTKToken", "HTK") {
         platformOwner = msg.sender;
-        _mint(platformOwner, 1000000 * 10 ** decimals()); // 平台所有者铸造 100 万 HTK
+        //_mint(platformOwner, 1000000 * 10 ** decimals()); // 平台所有者铸造 100 万 HTK
     }
 
     function buyTokens() external payable {
@@ -17,8 +17,7 @@ contract HTKToken is ERC20 {
 
     function sellTokens(uint256 amount) external {
         require(balanceOf(msg.sender) >= amount, "Insufficient HTK balance");
-        uint256 ethAmount = amount / 1000; // 1000 HTK = 1 ETH
-        _burn(msg.sender, amount);
-        payable(msg.sender).transfer(ethAmount* 10 ** decimals()); // 返还ETH
+        _burn(msg.sender, amount*10 ** decimals());
+        payable(msg.sender).transfer(amount* 10 ** decimals()/1000); // 返还ETH
     }
 }

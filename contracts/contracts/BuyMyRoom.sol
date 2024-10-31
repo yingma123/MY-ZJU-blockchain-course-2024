@@ -99,7 +99,7 @@ contract BuyMyRoom is ERC721 {
     function buyHouseWithHTK(uint256 tokenId) external {
         require(houses[tokenId].isForSale, "House is not for sale");
         uint256 priceHTK = houses[tokenId].price*1000;
-
+        address seller = ownerOf(tokenId);
         // 计算手续费，使用 calculateFee 函数
         uint256 feeHTK = calculateFeeHTK(tokenId);
         uint256 sellerAmount = priceHTK - feeHTK;
@@ -110,14 +110,14 @@ contract BuyMyRoom is ERC721 {
         htkToken.transferFrom(msg.sender, ownerOf(tokenId), sellerAmount); // 卖家收到扣除手续费后的金额
         htkToken.transferFrom(msg.sender, platformOwner, feeHTK); // 平台所有者收到手续费
 
-        _transfer(ownerOf(tokenId), msg.sender, tokenId);
+        _transfer(seller, msg.sender, tokenId);
 
         houses[tokenId].owner = msg.sender;
         houses[tokenId].isForSale = false;
 
         // 更新新所有者的房产列表
         ownerHouses[msg.sender].push(tokenId);
-        removeHouseFromOwner(ownerOf(tokenId), tokenId);
+        removeHouseFromOwner(seller, tokenId);
 
         emit HouseSold(tokenId, msg.sender, priceHTK);
     }
@@ -151,14 +151,21 @@ contract BuyMyRoom is ERC721 {
 
     function calculateFee(uint256 tokenId) public view returns (uint256) {
         uint256 durationInDays = (block.timestamp - houses[tokenId].listedTimestamp) / 1 days;
-        return houses[tokenId].price * feePercentage * durationInDays / 10000;
-    }
-    function calculateFeeHTK(uint256 tokenId) public view returns (uint256) {
-        uint256 durationInDays = (block.timestamp - houses[tokenId].listedTimestamp) / 1 days;
-        return houses[tokenId].price*1000*feePercentage * durationInDays / 10000;
+        uint256 fee = houses[tokenId].price * feePercentage * durationInDays / 10000;
+        // 限制最大手续费为价格的 50%
+        uint256 maxFee = houses[tokenId].price / 2;
+        return fee > maxFee ? maxFee : fee;
     }
 
-    // 修改此函数，返回 struct HouseWithTokenId 数组
+    function calculateFeeHTK(uint256 tokenId) public view returns (uint256) {
+        uint256 durationInDays = (block.timestamp - houses[tokenId].listedTimestamp) / 1 days;
+        uint256 feeHTK = houses[tokenId].price * 1000 * feePercentage * durationInDays / 10000;
+        // 限制最大手续费为 HTK 价格的 50%
+        uint256 maxFeeHTK = houses[tokenId].price * 1000 / 2;
+        return feeHTK > maxFeeHTK ? maxFeeHTK : feeHTK;
+    }
+
+
     function getHousesForSale() external view returns (HouseWithTokenId[] memory) {
         uint256 count = 0;
         for (uint256 i = 1; i <= houseCount; i++) {
@@ -184,24 +191,23 @@ contract BuyMyRoom is ERC721 {
         return forSaleHouses;
     }
 
-    function getAllHouses() external view returns (HouseWithTokenId[] memory) {
+//    function getAllHouses() external view returns (HouseWithTokenId[] memory) {
+//
+//        HouseWithTokenId[] memory forSaleHouses = new HouseWithTokenId[](houseCount);
+//        for (uint256 i = 1; i <= houseCount; i++) {
+//            forSaleHouses[i-1] = HouseWithTokenId({
+//                tokenId: i,
+//                owner: houses[i].owner,
+//                price: houses[i].price,
+//                listedTimestamp: houses[i].listedTimestamp,
+//                isForSale: houses[i].isForSale
+//            });
+//
+//        }
+//        return forSaleHouses;
+//    }
 
-        HouseWithTokenId[] memory forSaleHouses = new HouseWithTokenId[](houseCount);
-        for (uint256 i = 1; i <= houseCount; i++) {
-            forSaleHouses[i-1] = HouseWithTokenId({
-                tokenId: i,
-                owner: houses[i].owner,
-                price: houses[i].price,
-                listedTimestamp: houses[i].listedTimestamp,
-                isForSale: houses[i].isForSale
-            });
 
-        }
-        return forSaleHouses;
-    }
-
-
-    // 修改此函数，返回 struct HouseWithTokenId 数组
     function getMyHouses() external view returns (HouseWithTokenId[] memory) {
         uint256[] memory myHouseIds = ownerHouses[msg.sender];
         HouseWithTokenId[] memory myHouses = new HouseWithTokenId[](myHouseIds.length);
