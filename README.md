@@ -178,35 +178,35 @@
         ```
       用户通过 sellTokens 将 HTK 卖回 ETH，系统销毁用户的 HTK 并返还等值的 ETH
 
-    5. 用户房产查询
+5. 用户房产查询
 
-    - 查看挂牌房屋
-       ```solidity
-       function getHousesForSale() external view returns (HouseWithTokenId[] memory) {
-           uint256 count = 0;
-           for (uint256 i = 1; i <= houseCount; i++) {
-               if (houses[i].isForSale) {
-               count++;
-               }
-           }
-           HouseWithTokenId[] memory forSaleHouses = new HouseWithTokenId[](count);
-           uint256 index = 0;
-           for (uint256 i = 1; i <= houseCount; i++) {
-               if (houses[i].isForSale) {
-                   forSaleHouses[index] = HouseWithTokenId({
-                       tokenId: i,
-                       owner: houses[i].owner,
-                       price: houses[i].price,
-                       listedTimestamp: houses[i].listedTimestamp,
-                       isForSale: houses[i].isForSale
-                   });
-               index++;
-               }
-           }
-           return forSaleHouses;
-       }
-       ```
-      getHousesForSale 返回当前所有挂牌的房屋信息列表。
+   - 查看挂牌房屋
+      ```solidity
+      function getHousesForSale() external view returns (HouseWithTokenId[] memory) {
+          uint256 count = 0;
+          for (uint256 i = 1; i <= houseCount; i++) {
+              if (houses[i].isForSale) {
+              count++;
+              }
+          }
+          HouseWithTokenId[] memory forSaleHouses = new HouseWithTokenId[](count);
+          uint256 index = 0;
+          for (uint256 i = 1; i <= houseCount; i++) {
+              if (houses[i].isForSale) {
+                  forSaleHouses[index] = HouseWithTokenId({
+                      tokenId: i,
+                      owner: houses[i].owner,
+                      price: houses[i].price,
+                      listedTimestamp: houses[i].listedTimestamp,
+                      isForSale: houses[i].isForSale
+                  });
+              index++;
+              }
+          }
+          return forSaleHouses;
+      }
+      ```
+     getHousesForSale 返回当前所有挂牌的房屋信息列表。
 
 - 查看个人房产
      ```solidity
